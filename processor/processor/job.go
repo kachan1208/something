@@ -24,6 +24,7 @@ type job struct {
 	cancel  context.CancelFunc
 	err     error
 	mutex   sync.Mutex
+	wg      sync.WaitGroup
 }
 
 func newJob(file io.ReadCloser) (string, *job) {

@@ -51,6 +51,7 @@ func (p *PortProcessor) init(j *job) {
 	j.setStatus(StatusRunning)
 	for i := 0; i < WorkersCount; i++ {
 		go p.process(j, j.ctx)
+		j.wg.Add(1)
 	}
 }
 
@@ -80,6 +81,7 @@ func (p *PortProcessor) Process(filename string) (string, error) {
 		}
 
 		job.finish()
+		job.wg.Wait()
 		<-p.jobQueue
 	}(in)
 
