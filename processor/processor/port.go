@@ -102,6 +102,7 @@ func (p *PortProcessor) process(j *job, ctx context.Context) {
 	timer := time.NewTimer(MaxBatchTime)
 	batch := make([]*model.Port, 0, MaxBatchSize)
 	isExit := false
+	defer j.wg.Done()
 
 	for {
 		select {
