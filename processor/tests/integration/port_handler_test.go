@@ -1,3 +1,5 @@
+//+build integration
+
 package integration
 
 import (
@@ -21,7 +23,7 @@ func initPortHandler() *handler.PortHandler {
 	jsonDecoder := decoder.NewJSONStreamDecoder()
 	interfaceBuffer := buffer.NewInterfaceStream(1024)
 	localStorage := data.NewLocalStorage("../fixtures")
-	portProcessor := processor.NewPortProcessor(jsonDecoder, localStorage, interfaceBuffer, nil)
+	portProcessor := processor.NewPortProcessor(jsonDecoder, localStorage, interfaceBuffer, &StorageClientMock{})
 	portHandler := handler.NewPortHandler(portProcessor)
 
 	return portHandler

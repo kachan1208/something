@@ -24,15 +24,9 @@ type PortProcessor struct {
 }
 
 var (
-	WorkersCount = func() int {
-		return 5
-	}
-	MaxBatchTime = func() time.Duration {
-		return time.Second * 5
-	}
-	MaxBatchSize = func() int {
-		return 1024
-	}
+	WorkersCount = 10
+	MaxBatchTime = time.Second * 5
+	MaxBatchSize = 1024
 )
 
 func NewPortProcessor(
@@ -55,7 +49,7 @@ func NewPortProcessor(
 
 func (p *PortProcessor) init(j *job) {
 	j.setStatus(StatusRunning)
-	for i := 0; i < WorkersCount(); i++ {
+	for i := 0; i < WorkersCount; i++ {
 		go p.process(j, j.ctx)
 	}
 }
@@ -103,8 +97,8 @@ func (p *PortProcessor) GetStatus(jobID string) (int32, uint64, error) {
 }
 
 func (p *PortProcessor) process(j *job, ctx context.Context) {
-	timer := time.NewTimer(MaxBatchTime())
-	batch := make([]*model.Port, 0, MaxBatchSize())
+	timer := time.NewTimer(MaxBatchTime)
+	batch := make([]*model.Port, 0, MaxBatchSize)
 	isExit := false
 
 	for {
@@ -113,7 +107,7 @@ func (p *PortProcessor) process(j *job, ctx context.Context) {
 			port, _ := msg.(*model.Port)
 			batch = append(batch, port)
 
-			if len(batch) < MaxBatchSize() {
+			if len(batch) < MaxBatchSize {
 				continue
 			}
 		case <-timer.C:
@@ -122,7 +116,7 @@ func (p *PortProcessor) process(j *job, ctx context.Context) {
 		}
 
 		timer.Stop()
-		timer.Reset(MaxBatchTime())
+		timer.Reset(MaxBatchTime)
 
 		if len(batch) > 0 {
 			//circuit breaker should exist

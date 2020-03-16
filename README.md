@@ -16,7 +16,7 @@ q: How to build service processor(first service that process stream of data)?
 
 a: 
     
-    make
+    make build
 
 ---
 
@@ -30,8 +30,7 @@ q: How to run tests?
 
 a: 
 
-    make test-unit
-    make test-integration
+    make test
 
 ---
 
@@ -77,6 +76,7 @@ a:
 - a lot of tests
 - linter - one line with config? Please no, I don't wan't to play with it now 
 - docker-compose - one more thing to do, it's just a small file...
+- Lack of unit and integration tests
 
 ...
 
@@ -84,3 +84,13 @@ a:
 and this list also is not done) 
 
 There is a lot of small pieces missed, because it will not be deployed anyway. So why not just ask questions related to missed things and discuss them?
+
+---
+
+q: how to build proto?
+
+a: 
+    
+    make gen-proto
+
+but better to create CI process that will build and push all pb files into separate repo 

@@ -1,7 +1,8 @@
+//+build integration
+
 package integration
 
 import (
-	"fmt"
 	"io"
 	"io/ioutil"
 	"strings"
@@ -37,30 +38,32 @@ func (s *StorageClientMock) StoreBatchOfPorts(data []*model.Port) (uint64, error
 type LazyStorageClientMock struct{}
 
 func (s *LazyStorageClientMock) StoreBatchOfPorts(data []*model.Port) (uint64, error) {
-	fmt.Println(len(data))
-	time.Sleep(time.Millisecond * 200)
+	time.Sleep(time.Millisecond * 100)
 
 	return uint64(len(data)), nil
 }
 
-func initPortProcessor() *processor.PortProcessor {
-	jsonDecoder := decoder.NewJSONStreamDecoder()
-	interfaceBuffer := buffer.NewInterfaceStream(1024)
-	localStorage := &DataStorageMock{}
-	portProcessor := processor.NewPortProcessor(jsonDecoder, localStorage, interfaceBuffer, nil)
-
-	return portProcessor
-}
-
 func TestProcessorProcessGetJobID(t *testing.T) {
-	jobID, err := initPortProcessor().Process(fixtures.TestFilename)
+	proc := processor.NewPortProcessor(
+		decoder.NewJSONStreamDecoder(),
+		&DataStorageMock{},
+		buffer.NewInterfaceStream(2),
+		&StorageClientMock{})
+
+	jobID, err := proc.Process("does_it_really_matter")
 
 	assert.NoError(t, err)
 	assert.NotNil(t, jobID)
 }
 
 func TestProcessorProcessNoFile(t *testing.T) {
-	_, err := initPortProcessor().Process("nofile")
+	proc := processor.NewPortProcessor(
+		decoder.NewJSONStreamDecoder(),
+		data.NewLocalStorage("."),
+		buffer.NewInterfaceStream(2),
+		&StorageClientMock{})
+
+	_, err := proc.Process("no_file")
 
 	assert.Error(t, err)
 }
@@ -131,29 +134,21 @@ func TestProcessorGetStatusNoJobs(t *testing.T) {
 	assert.Zero(t, status, num)
 }
 
-func TestProcessorProcessMultipleJobs(t *testing.T) {
-	processor.MaxBatchSize = func() int {
-		return 1
-	}
-
-	processor.WorkersCount = func() int {
-		return 1
-	}
-
+func TestProcessorProcessQueueMultipleJobs(t *testing.T) {
 	proc := processor.NewPortProcessor(
 		decoder.NewJSONStreamDecoder(),
-		&DataStorageMock{},
+		data.NewLocalStorage("../fixtures"),
 		buffer.NewInterfaceStream(1),
 		&LazyStorageClientMock{})
 
-	jobID, err := proc.Process(fixtures.TestJSONDataSmall.Data)
+	jobID, err := proc.Process("ports.json")
 	time.Sleep(time.Millisecond * 50)
 
 	firstStatus, _, err := proc.GetStatus(jobID)
 	assert.NoError(t, err)
 	assert.Equal(t, processor.StatusRunning, firstStatus)
 
-	jobID2, err := proc.Process(fixtures.TestJSONDataSmall.Data)
+	jobID2, err := proc.Process("ports.json")
 	time.Sleep(time.Millisecond * 50)
 
 	firstStatus, _, err = proc.GetStatus(jobID)
@@ -164,3 +159,6 @@ func TestProcessorProcessMultipleJobs(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, processor.StatusQueued, secondStatus)
 }
+
+//Test stream error
+//Test save error
