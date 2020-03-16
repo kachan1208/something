@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package api.proto.storage;
+
+// option go_package = "github.com/kachan1208/something/api/proto/storage";
+
+service Storage {
+    rpc StorePorts(StorePortsReq) returns (StorePortsResp);
+    rpc GetPort(GetPortReq) returns (GetPortResp);
+} 
+
+message StorePortsReq {
+    repeated Port ports = 1;
+}
+
+message StorePortsResp {}
+
+message GetPortReq {
+    string key = 1;
+}
+
+message GetPortResp {
+    Port port = 1;
+}
+
+message Port {
+    string key = 1;
+    string name = 2;
+    string city = 3;
+    string country = 4;
+	repeated string alias = 5;
+	repeated string regions = 6;
+	repeated double coordinates = 7;
+	string province = 8;
+    string tz = 9;
+	repeated string unlocs = 10;
+	string code = 11;
+}

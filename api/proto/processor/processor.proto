@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package api.proto.processor;
+
+// option go_package = "github.com/kachan1208/something/api/proto/processor";
+
+enum DataType {
+    PORT = 0;
+}
+
+service Processor {
+    rpc ProcessFile(ProcessFileReq) returns (ProcessFileResp);
+    // rpc GetProgress(GetProgressReq) returns (GetProgressResp);
+    // rpc StopProcessing(StopProcessingReq) returns(StopProcessingResp);
+    rpc GetPort(GetPortReq) returns (GetPortResp);
+}
+
+message ProcessFileReq {
+    string filename = 1;
+    DataType type = 2; 
+}
+
+message ProcessFileResp {
+    string job_id = 1; 
+}
+
+message GetProgressReq {
+    string job_id = 1;
+}
+
+message GetProgressResp {
+    int64 items_processed = 1; 
+}
+
+message GetPortReq {
+    string key = 1;
+}
+
+message GetPortResp {
+    string key = 1;
+}
